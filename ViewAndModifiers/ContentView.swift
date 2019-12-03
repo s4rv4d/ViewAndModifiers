@@ -10,54 +10,50 @@ import SwiftUI
 
 struct ContentView: View {
     
-    @State private var useRed = false
-    let motto1 = Text("hi!")
-    let motto2 = Text("heyy!")
-    var motto3 : some View { Text("computed property") }
+//    @State private var useRed = false
+//    let motto1 = Text("hi!")
+//    let motto2 = Text("heyy!")
+//    var motto3 : some View { Text("computed property") }
 
     
     var body: some View {
-//        Button("Hello World") {
-//            self.useRed.toggle()
+//        Text("Hello World!")
+//        GridStack(rows: 4, columns: 4) { (row, col)  in
+//            HStack {
+//                Image(systemName: "\(row * 4 + col).circle")
+//                Text("R \(row) C \(col)")
+//            }
 //        }
-//        .foregroundColor(useRed ? .red : .blue)
-        
-//        VStack {
-//            Text("Sarvad")
-//                .blur(radius: 0)
-//                //blur is an environment modifier and cannot replace as an regular modifier
-//            Text("Shetty")
-//            Text("Lit iOS Dev")
-//        }.font(.title)
-        
-//        VStack {
-//            motto1
-//                .foregroundColor(.red)
-//            motto2
-//                .foregroundColor(.blue)
-//            motto3
-//        }
-        
-        VStack(spacing: 10) {
-//            Text("First view")
-//                .font(.largeTitle)
-//                .padding()
-//                .foregroundColor(.white)
-//                .background(Color.blue)
-//                .clipShape(Capsule())
-//            Text("Second view")
-//                .font(.largeTitle)
-//                .padding()
-//                .foregroundColor(.white)
-//                .background(Color.red)
-//            .clipShape(Capsule())
-            CapsuleView(text: "First")
-            .foregroundColor(.white)
-            CapsuleView(text: "Second")
-            .foregroundColor(.yellow)
-            
-            Text("Hello World!")
-            .titleStyle()
+        GridStack(row: 4, col: 4) { (row, col) in
+            Image(systemName: "\(row * 4 + col).circle")
+            Text("R \(row) C \(col)")
+        }
+    }
+}
+
+//custom container
+//creating new type of stack called GridStack
+struct GridStack<Content: View>: View {
+    let rows: Int
+    let columns: Int
+    let content: (Int, Int) -> Content
+    
+    init(row:Int, col:Int, @ViewBuilder content:@escaping (Int,Int) -> Content) {
+        //ViewBuilder creates an implicit stack on its own
+        self.rows = row
+        self.columns = col
+        self.content = content
+    }
+    
+    var body: some View {
+        VStack {
+            ForEach(0 ..< rows) { row in
+                HStack {
+                    ForEach(0 ..< self.columns) { column in
+                        self.content(row, column)
+                    }
+                }
+            }
         }
     }
 }
@@ -88,6 +84,23 @@ struct Title: ViewModifier {
     }
 }
 
+//watermark modifier
+struct WaterMark: ViewModifier {
+    var text: String
+   
+    func body(content: Content) -> some View {
+        ZStack(alignment: .bottomTrailing) {
+            content
+                Text(text)
+                    .font(.caption)
+                    .foregroundColor(.white)
+                    .padding(5)
+                    .background(Color.black)
+            
+        }
+    }
+}
+
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
@@ -99,5 +112,9 @@ struct ContentView_Previews: PreviewProvider {
 extension View {
     func titleStyle() -> some View {
         self.modifier(Title())
+    }
+    
+    func waterMarkedText(with text: String) -> some View {
+        self.modifier(WaterMark(text: text))
     }
 }
